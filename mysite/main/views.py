@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect
 from .models import Product
 from django.core.paginator import Paginator
 from .forms import NewUserForm
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
+
 # Create your views here.
 def homepage(request):
     product = Product.objects.all()  # queryset containing all products
@@ -28,3 +30,28 @@ def register(request):
         messages.error(request, "Unsuccessful registration.  Invalid info. ")
     form = NewUserForm
     return render(request=request, template_name="main/register.html", context={"form":form})
+
+# Login views
+def login_request(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are logged in successfully as {username}.")
+                return redirect("main:homepage")
+            else:
+                messages.error(request, "Invalid Username or Password.")
+
+        else:
+            messages.error(request, "Invalid Username or password.")
+    form = AuthenticationForm()
+    return render(request=request, template_name="main/login.html", context={"form":form})
+
+def logout_request(request):
+    logout(request)
+    messages.info(request, "You are logged out")
+    return redirect("main:login_request")
