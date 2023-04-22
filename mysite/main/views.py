@@ -5,6 +5,7 @@ from .forms import NewUserForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
+from .models import Article
 
 # Create your views here.
 def homepage(request):
@@ -55,3 +56,14 @@ def logout_request(request):
     logout(request)
     messages.info(request, "You are logged out")
     return redirect("main:login_request")
+
+def blog(request):
+    blog = Article.objects.all().order_by('-article_published')
+    paginator = Paginator(blog, 5)
+    page_number = request.GET.get('page')
+    blog_obj = paginator.get_page(page_number)
+    return render(request=request, template_name="main/blog.html", context={"blog":blog_obj})
+
+def article(request, article_page):
+    article = Article.objects.get(article_slug=article_page)
+    return render(request=request, template_name='main/article.html', context={"article": article})
