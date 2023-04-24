@@ -10,7 +10,10 @@ from .models import Article
 # Create your views here.
 def homepage(request):
     product = Product.objects.all()  # queryset containing all products
-    return render(request=request, template_name="main/home.html", context={'product':product})
+    new_posts = Article.objects.all().order_by('-article_published')[:4]
+    featured = Article.objects.filter(article_tags__tag_name='Featured')[:3]
+    most_recent = new_posts.first()
+    return render(request=request, template_name="main/home.html", context={'product':product, 'most_recent':most_recent, 'new_posts':new_posts, 'featured':featured})
 
 def products(request):
     products = Product.objects.all()
